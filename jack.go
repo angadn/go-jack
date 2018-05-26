@@ -56,8 +56,11 @@ void jack_set_info_function_go() {
 	jack_set_info_function(goInfoFunction);
 }
 */
-import "C"
-import "unsafe"
+import (
+	"C"
+	"sync"
+	"unsafe"
+)
 
 const (
 	// JackOptions
@@ -110,6 +113,7 @@ type AudioSample float32
 
 var (
 	clientMap     map[*C.struct__jack_client]*Client
+	clientMapLock sync.Mutex
 	errorFunction ErrorFunction = nil
 	infoFunction  InfoFunction  = nil
 )
@@ -121,6 +125,8 @@ func ClientOpen(name string, options int) (*Client, int) {
 	var status C.int
 	cclient := C.jack_client_open_go(cname, C.int(options), &status)
 	var client *Client
+	clientMapLock.Lock()
+	defer clientMapLock.Unlock()
 	if cclient != nil {
 		if clientMap == nil {
 			clientMap = make(map[*C.struct__jack_client]*Client)
