@@ -125,9 +125,9 @@ func ClientOpen(name string, options int) (*Client, int) {
 	var status C.int
 	cclient := C.jack_client_open_go(cname, C.int(options), &status)
 	var client *Client
-	clientMapLock.Lock()
-	defer clientMapLock.Unlock()
 	if cclient != nil {
+		clientMapLock.Lock()
+		defer clientMapLock.Unlock()
 		if clientMap == nil {
 			clientMap = make(map[*C.struct__jack_client]*Client)
 		}
